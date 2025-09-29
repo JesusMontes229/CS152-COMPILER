@@ -1,0 +1,237 @@
+static const char *WEB_PAGE_PREAMBLE = R"(
+<!-- Author: ClaudeAI, Edits by JC 08/23/2025, josuecrandall@gmail.com -->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WASM Runner</title>
+    <link rel="icon" href="webpage/favicon.ico" type="image/x-icon">
+    <style>
+        body {
+            background-color: #1a1a1a;
+            color: #e0e0e0;
+            font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+            margin: 0;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+        }
+        
+        h1 {
+            color: #ffffff;
+            border-bottom: 2px solid #444;
+            padding-bottom: 10px;
+        }
+        
+        .section {
+            background-color: #2d2d2d;
+            border: 1px solid #444;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        
+        textarea {
+            width: 100%;
+            height: 450px;
+            background-color: #1e1e1e;
+            color: #e0e0e0;
+            border: 1px solid #555;
+            border-radius: 4px;
+            padding: 10px;
+            font-family: inherit;
+            font-size: 18px;
+            resize: vertical;
+        }
+        
+        button {
+            background-color: #4a9eff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px 5px 10px 0;
+        }
+        
+        button:hover {
+            background-color: #357abd;
+        }
+        
+        .output {
+            background-color: #1e1e1e;
+            border: 1px solid #555;
+            border-radius: 4px;
+            padding: 15px;
+            margin: 10px 0;
+            font-family: inherit;
+            white-space: pre-wrap;
+            overflow-x: auto;
+            font-size: 18px;
+        }
+        
+        .error {
+            color: #ff6b6b;
+        }
+        
+        .label {
+            color: #888;
+            font-size: 18px;
+            margin-bottom: 5px;
+        }
+
+        /* Custom scrollbars */
+        ::-webkit-scrollbar {
+            width: 12px;
+            height: 12px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 10px;
+            border: 2px solid transparent;
+            background-clip: content-box;
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.5);
+            background-clip: content-box;
+        }
+        
+        ::-webkit-scrollbar-corner {
+            background: transparent;
+        }
+        
+        /* Firefox scrollbars */
+        * {
+            scrollbar-width: thin;
+            scrollbar-color: rgba(255, 255, 255, 0.3) transparent;
+        }
+        .duck-logo {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            width: 60px;
+            height: auto;
+            opacity: 0.4;
+            border-radius: 8px;
+            transition: opacity 0.3s ease;
+            z-index: 1000;
+        }
+        
+        .duck-logo:hover {
+            opacity: 8;
+        }
+    </style>
+</head>
+<body>
+    <img src="webpage/duck.png" alt="duck" class="duck-logo">
+    <div class="container">
+        <h1>WASM Runner</h1>
+        
+        <div class="section">
+            <div class="label">WASM Source (.wat)</div>
+            <textarea id="source_code" placeholder="Enter your source code here..." spellcheck="false" autocapitalize="none" autocomplete="off">
+)";
+static const char *WEB_PAGE_POSTAMBLE = R"(
+            </textarea>
+            <button onclick=" run_wasm() ">Run WASM</button>
+        </div>
+        
+        <div class="section">
+            <div class="label">Console Log</div>
+            <div id="result" class="output">Execution result will appear here...</div>
+        </div>
+    </div>
+
+    <script src="webpage/wabt.js"></script>
+    <script>
+        let wabt = null
+
+        let counter = 0
+
+        // compile / execute / display wasm output
+        async function run_wasm() {
+            const wasm_text = document.getElementById('source_code').value;
+            const result = document.getElementById('result');
+
+            result.textContent = ``
+            result.className = 'output'
+
+            try {
+                if (!wabt) { throw { message:"wabt module initialization failed, contact a priest" } }
+                
+                const wasm_module = wabt.parseWat('source_code.wat', wasm_text)
+                const wasm_binary = wasm_module.toBinary({}).buffer
+
+                const imports = {
+                    env: {
+                        print: (value) => {
+                            result.textContent += `${value}\n`
+                            return 0
+                        },
+                        putch: (value) => {
+                            result.textContent += String.fromCharCode(value)
+                            return 0
+                        }
+                    }
+                };
+
+                const module = await WebAssembly.instantiate(wasm_binary, imports)
+
+                result.textContent = `// Compilation successful ${counter++}\n`
+
+                const main_function = module.instance.exports.main;
+                main_function()
+            } catch (error) {
+                result.textContent = 'error: ' + error.message;
+                result.className = 'output error';
+            }
+        }
+
+        // Load wabt
+        WabtModule()
+            .then(module => {
+                wabt = module
+                run_wasm() // default run
+            })
+            .catch(error => {
+                const result = document.getElementById('result')
+                result.textContent = 'error: ' + error.message
+                result.className = 'output error'
+            })
+
+        document.addEventListener('keydown', (event) => {
+            if (event.key === 'Enter' && (document.activeElement.id !== 'source_code')) {
+                event.preventDefault();
+                console.log()
+                run_wasm();
+            }
+            if (event.key === 'Tab' && (document.activeElement.id === 'source_code')) {
+                event.preventDefault();
+
+                const src = document.getElementById('source_code')
+                const start = src.selectionStart;
+                const end = src.selectionEnd;
+            
+                src.value = src.value.substring(0, start) + '    ' + src.value.substring(end);
+                src.selectionStart = src.selectionEnd = start + 4;
+            }
+        });
+    </script>
+</body>
+</html>
+)";
+
+

@@ -1,0 +1,67 @@
+_______________  Text Encoding Specification  ________________
+  Source encoding is in Latin-1 (ISO 8859-1).
+  // All 8-bit bytes valid, no text encoding validation required.
+
+  A null terminator (zero byte) MUST be read as the end of a file stream.
+
+_______________  Token Specification  ________________
+whitespace:
+  [ \n\t\r\v\f]
+
+comments:
+  // is line comment
+
+identifiers:        
+  [a-zA-Z_][a-zA-Z_0-9]*
+
+keywords:
+  let break continue return loop if else
+
+Symbol Tokens:
+  ~ ^ * % ( ) : { } [ ] + - ,
+  == != << <= >> >=
+  > < ! = & | 
+  /                 // Don't forget about line comments!
+
+integer literals:
+  decimal     - [0-9]+
+
+  All integer literals are parsed as positive numbers.
+  // - 343 is parsed as unary minus and 343
+
+_______________  Syntax Specification  ________________
+
+_______  statements  _______
+program: function*
+function: id '(' param (',' param)* ')' block   // note: all functions assumed to return i32
+param: id ('[' ']')?
+var_dec: id ('[' int ']')?
+block: '{' stmt* '}'
+stmt: 'let' var_dec (',' var_dec)*
+    | 'return' expr
+    | 'loop' block
+    | 'break'
+    | 'continue'
+    | 'if' expr block ('else' block)?
+    | block
+    | expr '=' expr
+    | expr
+
+_______  expressions  _______
+// note: all expressions are left associative
+// (note: technically, unary is right associative)
+
+primary: int
+    | id ('[' expr ']')?
+    | id '(' expr (',' expr)* ')'
+    | '(' expr ')'
+unary: ('+' | '-' | '~' | '!')* primary
+mul: unary (('<<' | '>>' | '&' | '*' | '/' | '%') unary)*
+add: mul (('+' | '-' | '^' | '|') mul)*
+rel: add (('<' | '>' | '<=' | '>=' | '==' | '!=') add)*
+expr: rel
+
+_______________  Runtime Library Specification  ________________
+print(i32)      // writes out an i32 as a number, and returns 0
+putch(i32)      // writes out an i32 as a char, and returns 0
+
