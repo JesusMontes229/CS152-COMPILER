@@ -125,33 +125,33 @@ struct Stmt : public variant<Block, Expr, Let, Return, Loop, Break, Continue, If
 
 
 
-int main(void) {    
+// int main(void) {    
     
 
-    IntegerLiteral two{"2"}, four{"4"}, ten{"10"};
+//     IntegerLiteral two{"2"}, four{"4"}, ten{"10"};
     
-    BinaryOperation mul{ {four}, {ten}, "*" };
-    BinaryOperation add{ {two}, {mul}, "+" }; 
-    Expr expr = {add};
+//     BinaryOperation mul{ {four}, {ten}, "*" };
+//     BinaryOperation add{ {two}, {mul}, "+" }; 
+//     Expr expr = {add};
 
 
 
-    function<void(Expr&)> walk;
-    walk = [&](Expr& ex){  
-        if(auto binop = get_if<BinaryOperation>(&ex)){
-            cout << "(";
-            walk(binop->lhs[0]);
-            cout << " " << binop->opcode << " ";
-            walk(binop->rhs[0]);
-            cout << ")";
-        }
-        else if(auto literal = get_if<IntegerLiteral>(&ex)){
-            cout << literal->value;
-        }
-    };
+//     function<void(Expr&)> walk;
+//     walk = [&](Expr& ex){  
+//         if(auto binop = get_if<BinaryOperation>(&ex)){
+//             cout << "(";
+//             walk(binop->lhs[0]);
+//             cout << " " << binop->opcode << " ";
+//             walk(binop->rhs[0]);
+//             cout << ")";
+//         }
+//         else if(auto literal = get_if<IntegerLiteral>(&ex)){
+//             cout << literal->value;
+//         }
+//     };
 
-    walk(expr);
-    cout << "\n";
+//     walk(expr);
+//     cout << "\n";
 
-    return 0;
-}
+//     return 0;
+// }

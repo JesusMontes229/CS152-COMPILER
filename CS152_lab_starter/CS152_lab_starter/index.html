@@ -143,39 +143,36 @@
         <div class="section">
             <div class="label">WASM Source (.wat)</div>
             <textarea id="source_code" placeholder="Enter your source code here..." spellcheck="false" autocapitalize="none" autocomplete="off">
-
 (module
-  (import "env" "print" (func $print (param i32)))
-  (import "env" "putch" (func $putch (param i32)))
-  
-  (func $main (result i32)
-    i32.const 72
-    call $putch
-    i32.const 101
-    call $putch
-    i32.const 108
-    call $putch
-    i32.const 108
-    call $putch
-    i32.const 111
-    call $putch
-    i32.const 32
-    call $putch
-    i32.const 87
-    call $putch
-    i32.const 111
-    call $putch
-    i32.const 114
-    call $putch
-    i32.const 108
-    call $putch
-    i32.const 100
-    call $putch
+ (import "env" "print" (func $print (param i32) (result i32)))
+ (import "env" "putch" (func $putch (param i32) (result i32)))
+(func $main (result i32)
+i32.const 72
+call $putch
+drop
+i32.const 87
+call $putch
+drop
+i32.const 33
+call $putch
+drop
+i32.const 32
+call $putch
+drop
+i32.const 35
+call $putch
+drop
+i32.const 2
+call $print
+drop
+i32.const 10
+call $putch
+drop
+i32.const 0
+         )
+(export "main" (func $main))
+)
 
-    i32.const 0
-)
-  (export "main" (func $main))
-)
 
             </textarea>
             <button onclick=" run_wasm() ">Run WASM</button>
