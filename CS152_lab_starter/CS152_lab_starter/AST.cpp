@@ -61,7 +61,8 @@ struct FunctionCall {
 };
 
 struct BinaryOperation {
-    vector<Expr> lhs, rhs; 
+    //vector<Expr> lhs, rhs; 
+    vector<Expr> args; 
     string opcode;
 };
 struct UnaryOperation {
@@ -77,7 +78,8 @@ struct VariableAccess {
 };
 struct ArrayAccess {
     string name;
-    string idex;
+    //string idex;
+    vector<Expr> index;
 };
 
 struct Expr : public variant<IntegerLiteral, VariableAccess, FunctionCall, ArrayAccess, BinaryOperation, UnaryOperation> {  
